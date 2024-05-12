@@ -5,6 +5,7 @@ import axios from "axios";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
+  const [isUplaoding,setIsUploading] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -17,11 +18,14 @@ export default function Home() {
     if (!file) return;
 
     try {
+      //  set isuploading true
+      setIsUploading(true);
+
       // check file size if it is less than 10MB
       if (file.size < 10000000) {
         // Call your API to get the presigned URL
         const response = await axios.post(
-          "https://2vjzmhv7bp.ap-south-1.awsapprunner.com/generate-single-presigned-url",
+          "https://nmbst2kzbr.ap-south-1.awsapprunner.com/generate-single-presigned-url",
           {
             fileName: file.name,
           }
@@ -42,10 +46,13 @@ export default function Home() {
         } else {
           alert("Upload failed.");
         }
+
+        // set isUpload false
+        setIsUploading(false);
       } else {
         // call multipart upload endpoint and get uploadId
         const response = await axios.post(
-          "https://2vjzmhv7bp.ap-south-1.awsapprunner.com/start-multipart-upload",
+          "https://nmbst2kzbr.ap-south-1.awsapprunner.com/start-multipart-upload",
           {
             fileName: file.name,
             contentType: file.type,
@@ -65,7 +72,7 @@ export default function Home() {
 
         // generate presigned urls
         let presignedUrls_response = await axios.post(
-          "https://2vjzmhv7bp.ap-south-1.awsapprunner.com/generate-presigned-url",
+          "https://nmbst2kzbr.ap-south-1.awsapprunner.com/generate-presigned-url",
           {
             fileName: file.name,
             uploadId: uploadId,
@@ -111,7 +118,7 @@ export default function Home() {
 
         // make a call to multipart complete api
         let complete_upload = await axios.post(
-          "https://2vjzmhv7bp.ap-south-1.awsapprunner.com/complete-multipart-upload",
+          "https://nmbst2kzbr.ap-south-1.awsapprunner.com/complete-multipart-upload",
           {
             fileName: file.name,
             uploadId: uploadId,
@@ -127,6 +134,8 @@ export default function Home() {
         } else {
           alert("Upload failed.");
         }
+        // set isUpload false
+        setIsUploading(false);
       }
     } catch (error) {
       alert("Upload failed.");
@@ -134,9 +143,14 @@ export default function Home() {
   };
   return (
     <div>
-      <h2>Multipart Upload</h2>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload File</button>
+      <h1>Multipart Upload</h1>
+      <br></br>
+      {/* Input field to select file */}
+      <input type="file" onChange={handleFileChange} name="file" id="myFile" /> 
+      {/* Button to upload file */}
+      <button onClick={handleUpload} disabled={isUplaoding} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+        {isUplaoding ? "Uploading..." : "Upload"}
+      </button>
     </div>
   );
 }
